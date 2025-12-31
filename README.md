@@ -97,8 +97,5 @@ Forecasts are constrained to realistic bounds (e.g., maximum vaccine coverage ca
 
 ---
 
-## License
-
-This project is for academic and demonstration purposes. Data sources retain their original licenses.
 
 
