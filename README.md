@@ -65,5 +65,42 @@ Forecasts are constrained to realistic bounds (e.g., maximum vaccine coverage ca
 
 ---
 
-## Project Structure
+
+---
+
+## Key Findings
+
+- Vaccination coverage trends vary substantially across countries, even with similar predictors.
+- Child mortality and population-level indicators are among the strongest predictors of vaccine coverage.
+- Some countries show increasing projected coverage, while others exhibit stagnation or decline, indicating potential future risk.
+- Model performance varies by country, highlighting the limitations of a single global model.
+
+---
+
+## Limitations & Future Work
+
+- Annual data limits the ability to fully capture time-series dependencies.
+- Additional predictors (e.g., healthcare access, education, infrastructure) could improve model accuracy.
+- Future work could incorporate:
+  - Explicit time-series models
+  - Deep learning approaches with regularization
+  - Subnational data where available
+
+---
+
+## Contributions
+
+| Team Member | Contribution |
+|------------|--------------|
+| Eric Huang | Modeling, results analysis |
+| Sam Konstan | Introduction, discussion, conclusion |
+| Nupur Kumar | Data collection and cleaning |
+| Chiemeka Nwakama | Modeling, methods, forecasting pipeline |
+
+---
+
+## License
+
+This project is for academic and demonstration purposes. Data sources retain their original licenses.
+
 
