@@ -66,8 +66,6 @@ Forecasts are constrained to realistic bounds (e.g., maximum vaccine coverage ca
 ---
 
 
----
-
 ## Key Findings
 
 - Vaccination coverage trends vary substantially across countries, even with similar predictors.
