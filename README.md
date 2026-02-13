@@ -125,12 +125,12 @@ See the figures at the bottom of this README.
 ## Figures (stored in the repo root)
 
 ### Regression trees (per country)
-![Cameroon Regression Tree](Cameroon%20Reg%20Tree.png)
-![Ghana Regression Tree](Ghana%20Reg%20Tree.png)
-![Liberia Regression Tree](Liberia%20Reg%20Tree.png)
-![Nigeria Regression Tree](Nigeria%20Reg%20Tree.png)
-![Sierra Leone Regression Tree](Sierra%20Leone%20Reg%20Tree.png)
+![Cameroon Regression Tree](figures/Cameroon%20Reg%20Tree.png)
+![Ghana Regression Tree](figures/Ghana%20Reg%20Tree.png)
+![Liberia Regression Tree](figures/Liberia%20Reg%20Tree.png)
+![Nigeria Regression Tree](figures/Nigeria%20Reg%20Tree.png)
+![Sierra Leone Regression Tree](figures/Sierra%20Leone%20Reg%20Tree.png)
 
 ### Forecast plots
-![Figure 1: Future Immunization Predictions](Figure__1_future_prediction_immunzation.png)
-![Overall Trend](overall%20trend.png)
+![Figure 1: Future Immunization Predictions](figures/Figure__1_future_prediction_immunzation.png)
+![Overall Trend](figures/overall%20trend.png)
