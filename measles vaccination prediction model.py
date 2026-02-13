@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Load the CSV file
 file_path = 'info.csv'  # Replace with the actual path to your CSV file
@@ -14,8 +15,6 @@ long_df = pd.melt(df, id_vars=['Country Name', 'Series Name'], var_name='Year', 
 
 # Convert the 'Value' column to numeric, coercing errors to NaN
 long_df['Value'] = pd.to_numeric(long_df['Value'], errors='coerce')
-
-
 
 long_df['Value'] = long_df.groupby(['Country Name', 'Series Name'])['Value'].transform(lambda x: x.fillna(x.mean()))
 
@@ -48,13 +47,15 @@ wide_df.to_csv('transformed_data.csv', index=False)
 # Preview the formatted data
 print(wide_df)
 
-
 # Load the transformed data
 file_path = 'transformed_data.csv'  # Replace with your transformed data file path
 data = pd.read_csv(file_path)
 
 # Drop rows with missing Measles_Immunization or predictors (just to ensure no NaN remains)
 data = data.dropna(subset=['Measles_Immunization'])
+
+# Stores per-country forecast values so we can produce the same summary figures
+poly_all_country_preds = []
 
 # Loop through each country and perform analysis separately
 countries = data['Country Name'].unique()
@@ -109,4 +110,82 @@ for country in countries:
     plt.figure(figsize=(20, 10))
     plot_tree(dt, feature_names=X.columns, filled=True, rounded=True, fontsize=10)
     plt.title(f"Regression Tree for {country} - Measles Immunization Prediction")
+    plt.show()
+
+    # --- POLYNOMIAL REGRESSION (FORECASTING) ---
+    # Fits a polynomial curve to (Year -> Measles_Immunization) for each country,
+    # then predicts the next 5 years and produces the same style figures.
+
+    # Ensure Year is numeric and sorted
+    country_poly = country_data[['Year', 'Measles_Immunization']].copy()
+    country_poly['Year'] = pd.to_numeric(country_poly['Year'], errors='coerce')
+    country_poly = country_poly.dropna(subset=['Year', 'Measles_Immunization']).sort_values('Year')
+
+    # Baseline year = last observed year
+    baseline_year = int(country_poly['Year'].max())
+
+    # x = years since baseline (x=0 is baseline year)
+    x = (country_poly['Year'] - baseline_year).astype(float).values
+    y_poly = country_poly['Measles_Immunization'].astype(float).values
+
+    # Polynomial degree (increase carefully to avoid overfitting with limited yearly data)
+    poly_degree = 4
+
+    # Fit polynomial coefficients
+    coeffs = np.polyfit(x, y_poly, deg=poly_degree)
+    poly_fn = np.poly1d(coeffs)
+
+    # Predict next 5 years after baseline
+    future_years = np.array([baseline_year + i for i in range(1, 6)])
+    future_x = (future_years - baseline_year).astype(float)
+    future_pred = poly_fn(future_x)
+
+    # Constrain predictions to realistic bounds
+    future_pred = np.clip(future_pred, 0, 99.75)
+
+    # Store predictions for summary plots
+    for yr, pred in zip(future_years, future_pred):
+        poly_all_country_preds.append({
+            'Country': country,
+            'Year': int(yr),
+            'Predicted_Immunization': float(pred)
+        })
+
+    # Per-country forecast plot
+    plt.figure(figsize=(10, 5))
+    plt.plot(country_poly['Year'].values, y_poly, label='Observed')
+    plt.plot(future_years, future_pred, linestyle='--', label='Forecast (Polynomial)')
+    plt.title(f"Future Measles Immunization Predictions - {country}")
+    plt.xlabel("Year")
+    plt.ylabel("Measles Immunization (%)")
+    plt.legend()
+    plt.show()
+
+# Create the same summary figures across all countries
+poly_pred_df = pd.DataFrame(poly_all_country_preds)
+
+if not poly_pred_df.empty:
+    # Figure 1: Future predictions for each country
+    plt.figure(figsize=(12, 6))
+    for c in poly_pred_df['Country'].unique():
+        temp = poly_pred_df[poly_pred_df['Country'] == c].sort_values('Year')
+        plt.plot(temp['Year'], temp['Predicted_Immunization'], label=c)
+    plt.title("Figure 1: Future Measles Immunization Predictions (Polynomial Regression)")
+    plt.xlabel("Year")
+    plt.ylabel("Predicted Measles Immunization (%)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("Figure_1 future prediction immunzation.png", dpi=300)
+    plt.show()
+
+    # Overall trend: average predicted immunization across countries by year
+    overall = poly_pred_df.groupby('Year', as_index=False)['Predicted_Immunization'].mean()
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(overall['Year'], overall['Predicted_Immunization'])
+    plt.title("Overall Trend of Predicted Measles Immunization (Polynomial Regression)")
+    plt.xlabel("Year")
+    plt.ylabel("Average Predicted Immunization (%)")
+    plt.tight_layout()
+    plt.savefig("overall trend.png", dpi=300)
     plt.show()
