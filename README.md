@@ -110,15 +110,15 @@ See the figures at the bottom of this README.
 
 ## How to Run
 
-1. Place raw input files in the project directory (or update paths in scripts).
+1. Place raw input `info.csv` in the project directory (or update paths in scripts).
 2. Run the Python data transformation and modeling script to:
    - generate `transformed_data.csv`
    - train Random Forest + Regression Tree per country
    - print evaluation metrics and feature importances
    - render regression tree plots
-3. Run the R script to:
-   - clean WHO/UNICEF time series
-   - fit trend models and generate forward projections
+   - prune unimportant features
+   - fit polynomial model on remaing features
+   - output graphs of prediction for number of years set to predict
 
 ---
 
