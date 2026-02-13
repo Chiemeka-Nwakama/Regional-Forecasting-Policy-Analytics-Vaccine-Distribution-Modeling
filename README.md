@@ -108,7 +108,7 @@ See the figures at the bottom of this README.
 
 ---
 
-## How to Run (high level)
+## How to Run
 
 1. Place raw input files in the project directory (or update paths in scripts).
 2. Run the Python data transformation and modeling script to:
@@ -122,7 +122,7 @@ See the figures at the bottom of this README.
 
 ---
 
-## Figures (stored in the repo root)
+## Figures
 
 ### Regression trees (per country)
 ![Cameroon Regression Tree](figures/Cameroon%20Reg%20Tree.png)
