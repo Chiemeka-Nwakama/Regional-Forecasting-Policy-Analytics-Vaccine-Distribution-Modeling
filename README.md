@@ -132,5 +132,5 @@ See the figures at the bottom of this README.
 ![Sierra Leone Regression Tree](figures/Sierra%20Leone%20Reg%20Tree.png)
 
 ### Forecast plots
-![Figure 1: Future Immunization Predictions](figures/Figure__1_future_prediction_immunzation.png)
+![Figure 1: Future Immunization Predictions](figures/Figure_1%20future%20prediction%20immunzation.png)
 ![Overall Trend](figures/overall%20trend.png)
