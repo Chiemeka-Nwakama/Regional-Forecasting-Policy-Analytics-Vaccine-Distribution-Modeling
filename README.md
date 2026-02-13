@@ -1,21 +1,20 @@
 # Regional Forecasting & Policy Analytics: Vaccine Distribution Modeling
 
-**Authors:**  
-Chiemeka Nwakama, Eric Huang, Sam Konstan, Nupur Kumar
+**Authors:** Chiemeka Nwakama, Eric Huang, Sam Konstan, Nupur Kumar
 
 ---
 
 ## Overview
 
-This project analyzes **measles vaccination coverage (MCV1, MCV2)** and **reported measles cases** to understand regional disparities in immunization outcomes and to develop **country-level forecasting models**. Using historical data from global public health sources, the project implements a full analytics pipeline—from data ingestion and cleaning to modeling, evaluation, and forward-looking forecasts—to support **policy planning and resource allocation**.
+This project analyzes **measles vaccination coverage (MCV1, MCV2)** and **reported measles cases** to understand disparities in immunization outcomes and to build **country-level models** that support public health planning. The repository includes an end-to-end workflow: **data ingestion → cleaning/reshaping → modeling → evaluation → forecasting/visualization**, with a focused case study in **West Africa** where cross-country comparisons are more meaningful and data coverage is more consistent.
 
 ---
 
 ## Key Questions
 
-- How do measles vaccination coverage rates vary across countries and regions?
-- Which socioeconomic and health-related factors are most strongly associated with vaccine coverage?
-- How well can statistical and machine learning models forecast future vaccination coverage and measles case trends?
+- How do measles vaccination coverage rates vary across countries and over time?
+- Which socioeconomic and health indicators are most associated with measles immunization coverage?
+- How well do tree-based ML models predict measles immunization coverage at the country level?
 - Which countries may require additional intervention based on projected trends?
 
 ---
@@ -23,79 +22,115 @@ This project analyzes **measles vaccination coverage (MCV1, MCV2)** and **report
 ## Data Sources
 
 - **WHO**: Reported measles cases (1974–2023)
-- **UNICEF**: MCV1 and MCV2 vaccine coverage (2000–2023)
+- **UNICEF**: MCV1 and MCV2 coverage (2000–2023)
 - **World Bank Open Data**: Demographic, health, and economic indicators (2000–2022)
 
-To ensure consistency, analysis is restricted to overlapping countries and years. Due to data sparsity and heterogeneity at the global level, portions of the analysis focus on specific regions where more reliable comparisons can be made.
+To ensure comparability, analysis is restricted to **overlapping years/countries** where applicable. Because global comparisons can be confounded by large structural differences and missingness, the multivariate modeling portion of this project focuses on **West Africa** (Cameroon, Ghana, Liberia, Nigeria, Sierra Leone), selected based on data availability.
 
 ---
 
 ## Methods
 
-### Data Preparation
-- Aligned datasets to a common time window (2000–2023)
-- Reformatted wide tables into tidy, long-form structures
-- Removed non-informative columns and standardized country identifiers
-- Addressed missing data using:
-  - Mean imputation
-  - Iterative **PCA-based matrix reconstruction** for structured missingness
+### 1) Data Preparation (R + Python)
 
-### Modeling Approaches
-- **Log-linear regression** for forecasting reported measles cases
-- **Linear regression** for MCV1 and MCV2 vaccine coverage trends
-- **Regression trees** and **random forests** for multivariate prediction
-- **Polynomial regression** to capture non-linear vaccination trends
+**R (WHO/UNICEF time-aligned trends)**
+- Trimmed measles case data to align with vaccine coverage years (2000–2023)
+- Cleaned missing/blank values and standardized year column names
+- Generated country-level forecasts using:
+  - **Log-linear regression** for measles cases (fit in log-space, then back-transformed)
+  - **Linear regression** for MCV1 and MCV2 coverage trends (with coverage capped at 99%)
 
-### Evaluation
-- Models evaluated using:
-  - Mean Squared Error (MSE)
-  - R-squared
-- Predictor importance analyzed to guide feature selection and interpretation
+**Python (World Bank predictors for coverage modeling)**
+- Reshaped raw World Bank-style tables from wide → long (`melt`) and long → wide (`pivot_table`)
+- Converted values to numeric and addressed missingness using **group-wise mean imputation**
+  - (filled missing values per **Country × Indicator** using that group’s mean)
+- Standardized feature names for readable modeling columns
 
----
+### 2) Modeling: Predicting Measles Immunization Coverage (Python)
 
-## Forecasting
+Target (response variable):
+- **Measles_Immunization** = “Immunization, measles (% of children ages 12–23 months)”
 
-Country-specific models are used to generate **forward-looking projections (2024–2034)** for:
-- Reported measles cases
-- MCV1 vaccine coverage
-- MCV2 vaccine coverage
+Predictors (features):
+- Birth_Rate
+- Health_Expenditure
+- Death_Rate
+- Under5_Mortality
+- Under5_Deaths
+- OOP_Expenditure
+- Basic_Drinking_Water
+- Population
+- GDP_Growth
+- Inflation
 
-Forecasts are constrained to realistic bounds (e.g., maximum vaccine coverage capped at 99%) and are produced independently for each country to reflect regional heterogeneity.
+Models trained **separately per country**:
+- **Random Forest Regressor** (performance + feature importance)
+- **Regression Tree (DecisionTreeRegressor)** (interpretability; visualized with a shallow max depth)
 
----
+### 3) Evaluation and Interpretation
 
+For each country/model:
+- **Mean Squared Error (MSE)**
+- **R-squared (R²)**
 
-## Key Findings
-
-- Vaccination coverage trends vary substantially across countries, even with similar predictors.
-- Child mortality and population-level indicators are among the strongest predictors of vaccine coverage.
-- Some countries show increasing projected coverage, while others exhibit stagnation or decline, indicating potential future risk.
-- Model performance varies by country, highlighting the limitations of a single global model.
-
----
-
-## Limitations & Future Work
-
-- Annual data limits the ability to fully capture time-series dependencies.
-- Additional predictors (e.g., healthcare access, education, infrastructure) could improve model accuracy.
-- Future work could incorporate:
-  - Explicit time-series models
-  - Deep learning approaches with regularization
-  - Subnational data where available
+Interpretability:
+- **Random Forest feature importances** used to identify influential predictors
+- Regression tree plots used to explain decision logic (“if-then” splits)
 
 ---
 
-## Contributions
+## Forecasting & Visualizations
 
-| Team Member | Contribution |
-|------------|--------------|
-| Eric Huang | Modeling, results analysis |
-| Sam Konstan | Introduction, discussion, conclusion |
-| Nupur Kumar | Data collection and cleaning |
-| Chiemeka Nwakama | Modeling, methods, forecasting pipeline |
+This repository includes:
+- Country-level immunization projections based on fitted trend models
+- Regression tree diagrams (per country) for interpretability
+- A combined regional trend visualization
+
+See the figures at the bottom of this README.
 
 ---
 
+## Repository Outputs
 
+- `transformed_data.csv`: tidy country-year dataset produced from the raw indicator table
+- Printed tables of model performance (MSE, R²) per country
+- Feature importance rankings per country (Random Forest)
+- Regression tree plots per country
+- Forecast figures for future immunization trends
 
+---
+
+## Notes / Limitations
+
+- **Time dependence:** the ML split uses random train/test sampling; a time-based split (train early years → test later years) would better respect time-series structure.
+- **Missingness:** mean imputation is simple; more robust approaches (interpolation, iterative imputation) may improve stability.
+- **Country heterogeneity:** results vary by country; a single global model may not generalize well without additional structure.
+
+---
+
+## How to Run (high level)
+
+1. Place raw input files in the project directory (or update paths in scripts).
+2. Run the Python data transformation and modeling script to:
+   - generate `transformed_data.csv`
+   - train Random Forest + Regression Tree per country
+   - print evaluation metrics and feature importances
+   - render regression tree plots
+3. Run the R script to:
+   - clean WHO/UNICEF time series
+   - fit trend models and generate forward projections
+
+---
+
+## Figures (stored in the repo root)
+
+### Regression trees (per country)
+![Cameroon Regression Tree](Cameroon%20Reg%20Tree.png)
+![Ghana Regression Tree](Ghana%20Reg%20Tree.png)
+![Liberia Regression Tree](Liberia%20Reg%20Tree.png)
+![Nigeria Regression Tree](Nigeria%20Reg%20Tree.png)
+![Sierra Leone Regression Tree](Sierra%20Leone%20Reg%20Tree.png)
+
+### Forecast plots
+![Figure 1: Future Immunization Predictions](Figure__1_future_prediction_immunzation.png)
+![Overall Trend](overall%20trend.png)
