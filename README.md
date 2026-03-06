@@ -134,3 +134,7 @@ See the figures at the bottom of this README.
 ### Forecast plots
 ![Figure 1: Future Immunization Predictions](figures/Figure_1%20future%20prediction%20immunzation.png)
 ![Overall Trend](figures/overall%20trend.png)
+
+
+### Model Performance Comparision (MSE)
+![Test MSE Across Models](figures/Test%20MSE%20Across%20Models.png)
