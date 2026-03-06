@@ -66,6 +66,10 @@ Predictors (features):
 Models trained **separately per country**:
 - **Random Forest Regressor** (performance + feature importance)
 - **Regression Tree (DecisionTreeRegressor)** (interpretability; visualized with a shallow max depth)
+- **Two Ridge Forecast Models** for forward prediction:
+  - A first **Ridge regression model** is fit using the retained country-specific predictors to estimate immunization coverage from the socioeconomic and health indicators.
+  - A second **Ridge-based forecasting step** projects those predictor trends forward by year, allowing the model to generate future immunization estimates even when future observed covariates are unavailable.
+  - This two-model setup separates **predictor forecasting** from **coverage prediction**, helping stabilize forecasts under multicollinearity and small-sample country-level settings.
 
 ### 3) Evaluation and Interpretation
 
@@ -76,6 +80,7 @@ For each country/model:
 Interpretability:
 - **Random Forest feature importances** used to identify influential predictors
 - Regression tree plots used to explain decision logic (“if-then” splits)
+- Ridge models used as a more stable linear forecasting baseline after feature pruning, especially when predictors are correlated
 
 ---
 
@@ -85,6 +90,7 @@ This repository includes:
 - Country-level immunization projections based on fitted trend models
 - Regression tree diagrams (per country) for interpretability
 - A combined regional trend visualization
+- Forecasted immunization curves generated from the **two-step Ridge framework**, where future feature values are estimated first and then passed into a Ridge coverage model for final prediction
 
 See the figures at the bottom of this README.
 
@@ -97,14 +103,14 @@ See the figures at the bottom of this README.
 - Feature importance rankings per country (Random Forest)
 - Regression tree plots per country
 - Forecast figures for future immunization trends
+- Ridge-based future forecasts generated from the two-model prediction pipeline
 
 ---
 
 ## Notes / Limitations
 
-- **Time dependence:** the ML split uses random train/test sampling; a time-based split (train early years → test later years) would better respect time-series structure.
-- **Missingness:** mean imputation is simple; more robust approaches (interpolation, iterative imputation) may improve stability.
 - **Country heterogeneity:** results vary by country; a single global model may not generalize well without additional structure.
+- **Forecast uncertainty:** the two-step Ridge approach depends on the quality of projected future predictors, so forecasting error could potentially compound across both stages.
 
 ---
 
@@ -117,7 +123,7 @@ See the figures at the bottom of this README.
    - print evaluation metrics and feature importances
    - render regression tree plots
    - prune unimportant features
-   - fit polynomial model on remaing features
+   - fit the two Ridge forecast models for future feature and immunization prediction
    - output graphs of prediction for number of years set to predict
 
 ---
@@ -134,7 +140,6 @@ See the figures at the bottom of this README.
 ### Forecast plots
 ![Figure 1: Future Immunization Predictions](figures/Figure_1%20future%20prediction%20immunzation.png)
 ![Overall Trend](figures/overall%20trend.png)
-
 
 ### Model Performance Comparision (MSE)
 ![Test MSE Across Models](figures/Test%20MSE%20Across%20Models.png)
