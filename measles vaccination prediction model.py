@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import numpy as np
+from statsmodels.tsa.stattools import adfuller
 
 # Load the transformed data
 file_path = 'transformed_data.csv'
@@ -40,6 +41,9 @@ ridge_all_country_preds = []
 # Stores results for comparison across countries
 all_results = []
 
+# Stores ADF stationarity test results across countries
+adf_results = []
+
 # Smaller predictor set for the two-step model
 # This is simpler and more stable keeping important variables
 predictor_cols = [
@@ -64,6 +68,69 @@ for country in countries:
     # Filter data for the current country
     country_data = data[data['Country Name'] == country].copy()
     country_data = country_data.sort_values('Year')
+
+    # ADF stationarity check for the target and numeric predictors
+    adf_check_cols = [
+        'Measles_Immunization',
+        'Birth_Rate',
+        'Health_Expenditure',
+        'Death_Rate',
+        'GDP_Growth',
+        'Inflation',
+        'Under5_Mortality',
+        'Under5_Deaths',
+        'OOP_Expenditure',
+        'Basic_Drinking_Water',
+        'Population'
+    ]
+
+    print(f"\nADF Stationarity Check for {country}:")
+
+    for col in adf_check_cols:
+        if col not in country_data.columns:
+            continue
+
+        series = country_data[col].dropna()
+
+        if series.shape[0] < 4 or series.nunique() <= 1:
+            print(f"{col}: skipped (not enough variation or observations for ADF test)")
+            adf_results.append({
+                'Country': country,
+                'Variable': col,
+                'ADF_Statistic': np.nan,
+                'p_value': np.nan,
+                'Used_Lags': np.nan,
+                'Num_Observations': int(series.shape[0]),
+                'Stationary_At_5pct': 'Skipped'
+            })
+            continue
+
+        try:
+            adf_stat, p_value, used_lag, n_obs, _, _ = adfuller(series, autolag='AIC')
+            stationary_flag = 'Yes' if p_value < 0.05 else 'No'
+
+            print(f"{col}: ADF Statistic = {adf_stat:.4f}, p-value = {p_value:.4f}, Stationary at 5% = {stationary_flag}")
+
+            adf_results.append({
+                'Country': country,
+                'Variable': col,
+                'ADF_Statistic': adf_stat,
+                'p_value': p_value,
+                'Used_Lags': used_lag,
+                'Num_Observations': n_obs,
+                'Stationary_At_5pct': stationary_flag
+            })
+        except Exception as e:
+            print(f"{col}: skipped (ADF test error: {e})")
+            adf_results.append({
+                'Country': country,
+                'Variable': col,
+                'ADF_Statistic': np.nan,
+                'p_value': np.nan,
+                'Used_Lags': np.nan,
+                'Num_Observations': int(series.shape[0]),
+                'Stationary_At_5pct': 'Error'
+            })
 
     # Drop early rows that do not yet have lag values
     country_data_model = country_data.dropna(
@@ -455,6 +522,12 @@ print("\nModel Comparison Across Countries:")
 print(results_df)
 
 results_df.to_csv("model_comparison_results.csv", index=False)
+
+# Save ADF stationarity test results
+adf_results_df = pd.DataFrame(adf_results)
+print("\nADF Stationarity Results Across Countries:")
+print(adf_results_df)
+adf_results_df.to_csv("adf_stationarity_results.csv", index=False)
 
 # Create the summary figures across all countries
 ridge_pred_df = pd.DataFrame(ridge_all_country_preds)
