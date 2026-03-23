@@ -47,6 +47,7 @@ To ensure comparability, analysis is restricted to **overlapping years/countries
   - (filled missing values per **Country × Indicator** using that group’s mean)
 - Standardized feature names for readable modeling columns
 - Sorted records by **Country Name** and **Year** so time-based features could be created correctly within each country
+- Performed Augmented Dickey-Fuller (ADF) tests on the target and numeric predictor variables within each country to check whether series were stationary before modeling and forecasting
 - Engineered temporal immunization history features to capture persistence in vaccine coverage:
   - **Immunization_Lag1** = previous year’s measles immunization value
   - **Immunization_Lag2** = immunization value from two years earlier
