@@ -97,6 +97,7 @@ Modeling setup:
 
 For each country/model:
 - **Mean Squared Error (MSE)**
+- **Mean Absolute Percentage Error (MAPE)**
 - **R-squared (R²)**
 
 Additional evaluation steps:
