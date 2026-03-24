@@ -104,6 +104,7 @@ Additional evaluation steps:
 - The **Two-Step Ridge model** is backtested by holding out the final 5 years, forecasting predictors for those years using only earlier history, and then comparing predicted immunization values with the observed holdout period
 - Ridge training and test performance are summarized with:
   - **Train/Test MSE**
+  - **Train/Test MAPE**
   - **Train/Test RMSE**
   - **Train/Test R²**
   - **Residual plots** for holdout years
@@ -189,3 +190,7 @@ See the figures at the bottom of this README.
 
 ### Model Performance Comparision (MSE)
 ![Test MSE Across Models](figures/Test%20MSE%20Across%20Models.png)
+
+
+### Model Performance Comparision (MAPE)
+![Test MAPE Across Models](figures/Test%20MAPE%20Across%20Models.png)
