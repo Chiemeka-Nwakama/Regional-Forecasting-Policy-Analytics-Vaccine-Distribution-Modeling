@@ -140,7 +140,7 @@ See the figures at the bottom of this README.
 ## Repository Outputs
 
 - `transformed_data.csv`: tidy country-year dataset produced from the raw indicator table
-- Printed tables of model performance (MSE, R²) per country
+- Printed tables of model performance (MSE, MAPE, R²) per country
 - Feature importance rankings per country (Random Forest)
 - Regression tree plots per country
 - Forecast figures for future immunization trends
