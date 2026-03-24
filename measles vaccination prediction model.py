@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_percentage_error
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -195,10 +195,12 @@ for country in countries:
 
     naive_mse = mean_squared_error(y_test, y_pred_naive)
     naive_r2 = r2_score(y_test, y_pred_naive)
+    naive_mape = mean_absolute_percentage_error(y_test, y_pred_naive) * 100
 
     print(f"Naive Baseline Results for {country}:")
     print(f"Mean Squared Error: {naive_mse:.2f}")
     print(f"R2 Score: {naive_r2:.2f}")
+    print(f"MAPE: {naive_mape:.2f}%")
 
     # --- RANDOM FOREST REGRESSOR ---
     rf = RandomForestRegressor(
@@ -213,10 +215,12 @@ for country in countries:
 
     rf_mse = mean_squared_error(y_test, y_pred_rf)
     rf_r2 = r2_score(y_test, y_pred_rf)
+    rf_mape = mean_absolute_percentage_error(y_test, y_pred_rf) * 100
 
     print(f"\nRandom Forest Results for {country}:")
     print(f"Mean Squared Error: {rf_mse:.2f}")
     print(f"R2 Score: {rf_r2:.2f}")
+    print(f"MAPE: {rf_mape:.2f}%")
 
     feature_importance = pd.DataFrame({
         'Feature': feature_cols,
@@ -238,10 +242,12 @@ for country in countries:
 
     dt_mse = mean_squared_error(y_test, y_pred_dt)
     dt_r2 = r2_score(y_test, y_pred_dt)
+    dt_mape = mean_absolute_percentage_error(y_test, y_pred_dt) * 100
 
     print(f"\nRegression Tree Results for {country}:")
     print(f"Mean Squared Error: {dt_mse:.2f}")
     print(f"R2 Score: {dt_r2:.2f}")
+    print(f"MAPE: {dt_mape:.2f}%")
 
     plt.figure(figsize=(20, 10))
     plot_tree(dt, feature_names=feature_cols, filled=True, rounded=True, fontsize=10)
@@ -255,6 +261,8 @@ for country in countries:
     ridge_test_rmse = np.nan
     ridge_train_r2 = np.nan
     ridge_test_r2 = np.nan
+    ridge_train_mape = np.nan
+    ridge_test_mape = np.nan
     best_alpha = np.nan
 
     if country_data_model.shape[0] >= 12:
@@ -353,6 +361,8 @@ for country in countries:
         ridge_test_rmse = np.sqrt(ridge_test_mse)
         ridge_train_r2 = r2_score(y_train_ridge, best_train_pred)
         ridge_test_r2 = r2_score(y_test_ridge, best_test_pred)
+        ridge_train_mape = mean_absolute_percentage_error(y_train_ridge, best_train_pred) * 100
+        ridge_test_mape = mean_absolute_percentage_error(y_test_ridge, best_test_pred) * 100
         ridge_test_residuals = y_test_ridge - best_test_pred
 
         print(f"\nTwo-Step Ridge Backtest for {country} (hold out last {holdout_k} years):")
@@ -363,6 +373,8 @@ for country in countries:
         print(f"Test RMSE: {ridge_test_rmse:.2f}")
         print(f"Train R2: {ridge_train_r2:.2f}")
         print(f"Test R2: {ridge_test_r2:.2f}")
+        print(f"Train MAPE: {ridge_train_mape:.2f}%")
+        print(f"Test MAPE: {ridge_test_mape:.2f}%")
         print("Test residuals:", ridge_test_residuals.values)
 
         final_ridge = best_ridge_model.named_steps['ridge']
@@ -505,19 +517,25 @@ for country in countries:
         'Country': country,
         'Naive_MSE': naive_mse,
         'Naive_R2': naive_r2,
+        'Naive_MAPE': naive_mape,
         'RF_MSE': rf_mse,
         'RF_R2': rf_r2,
+        'RF_MAPE': rf_mape,
         'DT_MSE': dt_mse,
         'DT_R2': dt_r2,
+        'DT_MAPE': dt_mape,
         'TwoStepRidge_Best_Alpha': best_alpha,
         'TwoStepRidge_Train_MSE': ridge_train_mse,
         'TwoStepRidge_Test_MSE': ridge_test_mse,
         'TwoStepRidge_Train_R2': ridge_train_r2,
-        'TwoStepRidge_Test_R2': ridge_test_r2
+        'TwoStepRidge_Test_R2': ridge_test_r2,
+        'TwoStepRidge_Train_MAPE': ridge_train_mape,
+        'TwoStepRidge_Test_MAPE': ridge_test_mape
     })
 
 # Comparison table across countries
 results_df = pd.DataFrame(all_results)
+
 print("\nModel Comparison Across Countries:")
 print(results_df)
 
@@ -590,6 +608,25 @@ if not results_df.empty:
     plt.xticks(x, countries, rotation=45)
     plt.ylabel("R2 Score")
     plt.title("Test R2 Comparison Across Models")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# Grouped bar chart for Test MAPE
+if not results_df.empty:
+    countries = results_df['Country']
+    x = np.arange(len(countries))
+    width = 0.2
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(x - 1.5 * width, results_df['Naive_MAPE'], width, label='Naive')
+    plt.bar(x - 0.5 * width, results_df['RF_MAPE'], width, label='Random Forest')
+    plt.bar(x + 0.5 * width, results_df['DT_MAPE'], width, label='Decision Tree')
+    plt.bar(x + 1.5 * width, results_df['TwoStepRidge_Test_MAPE'], width, label='Two-Step Ridge')
+
+    plt.xticks(x, countries, rotation=45)
+    plt.ylabel("MAPE (%)")
+    plt.title("Test MAPE Comparison Across Models")
     plt.legend()
     plt.tight_layout()
     plt.show()
